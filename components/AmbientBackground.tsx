@@ -1,28 +1,44 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 
-export const AmbientBackground: React.FC = () => {
+interface AmbientBackgroundProps {
+  isReading?: boolean;
+}
+
+export const AmbientBackground: React.FC<AmbientBackgroundProps> = ({ isReading = false }) => {
   return (
     <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden select-none">
-      {/* Deep warm walnut wood desk base */}
+      {/* Deep warm walnut wood desk base with rich grain */}
       <div 
-        className="absolute inset-0 bg-[#140e0b]"
+        className="absolute inset-0 bg-[#0e0a07]"
         style={{
           backgroundImage: `
-            radial-gradient(ellipse at 50% 30%, rgba(68, 42, 28, 0.45) 0%, rgba(20, 14, 11, 0.95) 75%),
-            linear-gradient(180deg, rgba(30, 20, 15, 0.6) 0%, rgba(12, 8, 6, 0.98) 100%)
+            radial-gradient(ellipse at 50% 28%, rgba(65, 40, 24, 0.42) 0%, rgba(16, 11, 8, 0.95) 75%),
+            linear-gradient(180deg, rgba(28, 18, 12, 0.55) 0%, rgba(10, 7, 5, 0.98) 100%)
           `,
         }}
       />
 
-      {/* Gentle Candlelight Radial Glow behind the letter */}
-      <div
-        className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[550px] rounded-full blur-3xl opacity-20 bg-amber-600/30 pointer-events-none"
+      {/* Gentle Candlelight Radial Glow behind the letter (subtle breathing animation) */}
+      <motion.div
+        className="absolute top-[38%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[580px] rounded-full blur-3xl bg-amber-600/25 candle-glow pointer-events-none"
+        animate={{
+          opacity: isReading ? 0.16 : 0.24,
+          scale: isReading ? 0.95 : 1,
+        }}
+        transition={{ duration: 1.8, ease: 'easeInOut' }}
       />
 
-      {/* Vignette around borders */}
-      <div className="ambient-vignette absolute inset-0" />
+      {/* Vignette around borders - subtly deepens during reading */}
+      <motion.div 
+        className="ambient-vignette absolute inset-0"
+        animate={{
+          opacity: isReading ? 0.98 : 0.85,
+        }}
+        transition={{ duration: 1.6, ease: 'easeInOut' }}
+      />
     </div>
   );
 };

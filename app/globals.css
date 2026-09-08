@@ -12,7 +12,7 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #120e0b;
+  background-color: #100b08;
   color: #211915;
   min-height: 100vh;
   overflow-x: hidden;
@@ -46,43 +46,52 @@ body {
   backface-visibility: hidden;
 }
 
-/* Aged Parchment Texture and Grain */
+/* Realistic Aged Parchment Texture with Paper Fibers */
 .parchment-paper {
-  background-color: #f7f2e7;
+  background-color: #f7f2e5;
   background-image: 
-    radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.5) 0%, rgba(235, 222, 198, 0.45) 80%, rgba(210, 190, 155, 0.55) 100%),
-    linear-gradient(90deg, rgba(220, 200, 170, 0.15) 0%, transparent 5%, transparent 95%, rgba(200, 180, 150, 0.2) 100%),
-    linear-gradient(0deg, rgba(220, 200, 170, 0.15) 0%, transparent 5%, transparent 95%, rgba(200, 180, 150, 0.2) 100%);
+    radial-gradient(ellipse at 50% 40%, #fcf8ee 0%, #f4ecda 75%, #ebdcc0 100%),
+    linear-gradient(90deg, rgba(190, 160, 120, 0.12) 0%, transparent 4%, transparent 96%, rgba(180, 150, 110, 0.15) 100%),
+    linear-gradient(0deg, rgba(190, 160, 120, 0.12) 0%, transparent 4%, transparent 96%, rgba(180, 150, 110, 0.18) 100%),
+    radial-gradient(circle at 18% 22%, rgba(160, 120, 70, 0.04) 0%, transparent 20%),
+    radial-gradient(circle at 82% 78%, rgba(160, 120, 70, 0.04) 0%, transparent 25%);
   box-shadow: 
-    0 20px 45px -10px rgba(15, 10, 6, 0.6),
-    0 4px 12px rgba(15, 10, 6, 0.35),
-    inset 0 0 40px rgba(160, 125, 75, 0.22),
-    inset 0 0 100px rgba(135, 100, 55, 0.12);
+    0 25px 65px -12px rgba(10, 6, 4, 0.7),
+    0 4px 16px rgba(10, 6, 4, 0.4),
+    inset 0 0 50px rgba(160, 125, 75, 0.22),
+    inset 0 0 120px rgba(135, 100, 55, 0.12);
 }
 
-/* Envelope Flap Textures */
+/* Envelope Aged Paper Texture */
 .envelope-paper {
-  background-color: #f3ede0;
+  background-color: #f4eee2;
   background-image: 
-    radial-gradient(circle at 50% 40%, #faf6ee 0%, #ebe2ce 85%, #dfd4bc 100%);
+    radial-gradient(circle at 50% 35%, #faf5ec 0%, #ede3d0 80%, #dfd2bb 100%),
+    radial-gradient(circle at 92% 12%, rgba(160, 120, 75, 0.07) 0%, transparent 15%),
+    radial-gradient(circle at 8% 88%, rgba(160, 120, 75, 0.07) 0%, transparent 15%);
   box-shadow: 
     0 25px 50px -12px rgba(0, 0, 0, 0.65),
     0 8px 24px -4px rgba(0, 0, 0, 0.45),
-    inset 0 0 30px rgba(180, 150, 110, 0.2);
+    inset 0 0 40px rgba(175, 140, 95, 0.22);
 }
 
-/* Stamp Serrated Border */
-.postage-stamp-border {
-  background: #fbf8f1;
-  background-image: radial-gradient(transparent 0px, transparent 4px, #fbf8f1 4px, #fbf8f1);
-  background-size: 10px 10px;
+/* Subtle Aged Tea Droplet / Water Ring */
+.tea-stain {
+  position: absolute;
+  width: 55px;
+  height: 50px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 45% 48%, rgba(175, 130, 85, 0.01) 0%, rgba(175, 130, 85, 0.05) 60%, rgba(145, 100, 55, 0.09) 85%, transparent 100%);
+  filter: blur(0.5px);
+  transform: rotate(-15deg);
 }
 
-/* Realistic Letter Crease Line */
-.paper-crease-horizontal {
+/* Realistic Letter Crease Lines */
+.paper-crease {
   position: relative;
 }
-.paper-crease-horizontal::after {
+.paper-crease::after {
   content: '';
   position: absolute;
   left: 0;
@@ -91,22 +100,16 @@ body {
   background: linear-gradient(
     90deg, 
     transparent 0%, 
-    rgba(140, 110, 70, 0.15) 15%, 
-    rgba(140, 110, 70, 0.25) 50%, 
-    rgba(140, 110, 70, 0.15) 85%, 
+    rgba(140, 105, 65, 0.12) 8%, 
+    rgba(140, 105, 65, 0.25) 50%, 
+    rgba(140, 105, 65, 0.12) 92%, 
     transparent 100%
   );
-  box-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 1px 1px rgba(255, 255, 255, 0.45);
   pointer-events: none;
 }
 
-/* Subtle Ink Stroke appearance */
-.ink-text {
-  color: #1c1714;
-  text-shadow: 0 0 0.5px rgba(28, 23, 20, 0.4);
-}
-
-/* Subtle Film Grain Overlay */
+/* Subtle Film & Paper Grain Overlay */
 .film-grain {
   position: fixed;
   top: 0;
@@ -114,12 +117,36 @@ body {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: 0.038;
   z-index: 99;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Gentle Candlelight Breathing Glow */
+@keyframes candleFlicker {
+  0%, 100% {
+    opacity: 0.22;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  25% {
+    opacity: 0.26;
+    transform: translate(-49.5%, -50.5%) scale(1.02);
+  }
+  50% {
+    opacity: 0.19;
+    transform: translate(-50.5%, -49.5%) scale(0.98);
+  }
+  75% {
+    opacity: 0.24;
+    transform: translate(-50%, -50%) scale(1.01);
+  }
+}
+
+.candle-glow {
+  animation: candleFlicker 9s ease-in-out infinite;
 }
 
 /* Golden Candlelight Vignette */
 .ambient-vignette {
-  background: radial-gradient(circle at 50% 45%, rgba(45, 30, 20, 0) 30%, rgba(18, 12, 8, 0.85) 90%, rgba(10, 7, 5, 0.96) 100%);
+  background: radial-gradient(circle at 50% 45%, rgba(40, 26, 16, 0) 30%, rgba(14, 9, 6, 0.88) 90%, rgba(8, 5, 4, 0.98) 100%);
 }

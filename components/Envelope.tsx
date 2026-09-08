@@ -27,14 +27,21 @@ export const Envelope: React.FC<EnvelopeProps> = ({
   };
 
   return (
-    <div className="relative w-full max-w-[580px] aspect-[1.5/1] mx-auto select-none perspective-1000">
+    <motion.div 
+      className="relative w-full max-w-[580px] aspect-[1.5/1] mx-auto select-none perspective-1000"
+      animate={{
+        rotate: isOpen ? [-0.4, 0.4, 0] : 0,
+        y: isOpen ? 6 : 0,
+      }}
+      transition={{ duration: 0.9, ease: 'easeOut' }}
+    >
       {/* Outer Envelope Ambient Shadow on Table */}
       <motion.div
-        className="absolute inset-0 rounded-md bg-black/45 blur-xl translate-y-6 scale-95"
+        className="absolute inset-0 rounded-md bg-black/50 blur-xl translate-y-6 scale-95"
         animate={{
           scale: isOpen ? 0.9 : 0.96,
           opacity: isOpen ? 0.25 : 0.55,
-          y: isOpen ? 28 : 20,
+          y: isOpen ? 30 : 20,
         }}
         transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
       />
@@ -59,7 +66,25 @@ export const Envelope: React.FC<EnvelopeProps> = ({
             }}
           />
           {/* Deep slot shadow */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/25" />
+
+          {/* Letter Peeking Out from Slot when Flap Opens */}
+          <motion.div
+            className="absolute left-[10%] right-[10%] h-[55%] rounded-t-sm bg-[#faf5ea] shadow-md border-t border-l border-r border-[#d4c3a3]"
+            initial={{ y: '20%', opacity: 0 }}
+            animate={
+              isOpen
+                ? {
+                    y: '-28%',
+                    opacity: 1,
+                    transition: { duration: 1.1, delay: 0.5, ease: [0.25, 1, 0.5, 1] },
+                  }
+                : { y: '20%', opacity: 0 }
+            }
+          >
+            {/* Subtle stationery crease hint */}
+            <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#8c6b45]/20 to-transparent mt-3" />
+          </motion.div>
         </div>
 
         {/* ENVELOPE FACE BACKGROUND FOLDS (Soft, realistic paper creases) */}
@@ -92,7 +117,7 @@ export const Envelope: React.FC<EnvelopeProps> = ({
         />
 
         {/* TOP FLAP (3D Animated Fold with Wax Seal) */}
-        {/* Tapered from 10% to 90% width so it never covers the Stamp or From address! */}
+        {/* Tapered from 8% to 92% width so it never covers the Stamp or From address! */}
         <motion.div
           className="absolute top-0 left-[8%] right-[8%] h-[37%] origin-top preserve-3d cursor-pointer"
           style={{
@@ -103,9 +128,9 @@ export const Envelope: React.FC<EnvelopeProps> = ({
             rotateX: isOpen ? -175 : 0,
           }}
           transition={{
-            duration: 1.4,
-            ease: [0.4, 0, 0.2, 1],
-            delay: isOpen ? 0.2 : 0,
+            duration: 1.5,
+            ease: [0.35, 0, 0.2, 1],
+            delay: isOpen ? 0.25 : 0,
           }}
           onClick={handleOpenClick}
         >
@@ -114,8 +139,8 @@ export const Envelope: React.FC<EnvelopeProps> = ({
             className="w-full h-full relative"
             style={{
               clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
-              background: 'linear-gradient(180deg, #f7f1e4 0%, #e3d6bc 100%)',
-              filter: 'drop-shadow(0 5px 8px rgba(0,0,0,0.22))',
+              background: 'linear-gradient(180deg, #f8f2e6 0%, #e3d5bb 100%)',
+              filter: 'drop-shadow(0 5px 9px rgba(0,0,0,0.25))',
               borderBottom: '1px solid rgba(175,145,105,0.4)',
             }}
           >
@@ -130,7 +155,6 @@ export const Envelope: React.FC<EnvelopeProps> = ({
         </motion.div>
 
         {/* FRONT ADDRESSING & DETAILS LAYER */}
-        {/* Placed at z-30 (above background creases) with clear spacing */}
         <div className="absolute inset-0 z-30 p-5 sm:p-7 flex flex-col justify-between pointer-events-none">
           
           {/* TOP ROW: Sender & Stamp (Outside the flap fold, completely unobstructed) */}
@@ -215,6 +239,6 @@ export const Envelope: React.FC<EnvelopeProps> = ({
           <span className="inline-block w-6 h-[1px] bg-[#d5c3a3]/40" />
         </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };

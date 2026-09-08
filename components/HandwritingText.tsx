@@ -22,7 +22,7 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
   onComplete,
 }) => {
   // Phase management
-  // 0: not started, 1: salutation, 2: body paragraphs, 3: emotional pause, 4: closing, 5: signature, 6: finished
+  // 0: not started, 1: salutation, 2: body paragraphs, 3: emotional pause, 4: closing, 5: signature, 6: finished stillness
   const [phase, setPhase] = useState<number>(0);
   const [salutationText, setSalutationText] = useState<string>('');
   const [completedParagraphs, setCompletedParagraphs] = useState<string[]>([]);
@@ -34,7 +34,7 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
   const activeAnchorRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-scroll so Maria always sees what is being written
+  // Auto-scroll so Maria smoothly follows the active line without jarring jumps
   useEffect(() => {
     if (activeAnchorRef.current && phase > 0 && phase < 6 && !isPaused) {
       activeAnchorRef.current.scrollIntoView({
@@ -59,22 +59,23 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
     }
   }, [isSkipped, data, onComplete]);
 
-  // Main handwriting loop
+  // Main handwriting loop with sentence-aware emotional timing
   useEffect(() => {
     if (!isStarted || isSkipped || isPaused) return;
 
     const baseCharDelay = 32 * speedMultiplier;
-    const commaDelay = 220 * speedMultiplier;
-    const periodDelay = 520 * speedMultiplier;
-    const paraDelay = 850 * speedMultiplier;
-    const emotionalPauseDelay = 1500 * speedMultiplier;
+    const commaDelay = 240 * speedMultiplier;
+    const periodDelay = 580 * speedMultiplier;
+    const standardParaDelay = 950 * speedMultiplier;
+    const emotionalParaDelay = 1550 * speedMultiplier;
+    const finalLetterPauseDelay = 2400 * speedMultiplier; // Stillness before closing
 
-    // Helper to calculate pause after char
+    // Helper to calculate pause after char with organic human variance
     const getCharDelay = (char: string) => {
       if (char === ',' || char === ';' || char === ':') return commaDelay;
       if (char === '.' || char === '!' || char === '?') return periodDelay;
-      // Slight natural variation
-      return baseCharDelay + (Math.random() * 12 - 6);
+      // Slight natural variance between keystrokes/strokes (±8ms)
+      return baseCharDelay + (Math.random() * 16 - 8);
     };
 
     // Phase 0 -> Phase 1: Start Salutation
@@ -87,7 +88,7 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
       };
     }
 
-    // Phase 1: Writing Salutation ("To Maria Mathew,")
+    // Phase 1: Inking Salutation ("To Maria Mathew,")
     if (phase === 1) {
       if (salutationText.length < data.salutation.length) {
         const nextChar = data.salutation[salutationText.length];
@@ -95,17 +96,17 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
           setSalutationText((prev) => prev + nextChar);
         }, getCharDelay(nextChar));
       } else {
-        // Finished salutation, short pause before first paragraph
+        // Pause after salutation before first intimate words
         timeoutRef.current = setTimeout(() => {
           setPhase(2);
-        }, paraDelay);
+        }, 1200 * speedMultiplier);
       }
       return () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
       };
     }
 
-    // Phase 2: Writing Body Paragraphs
+    // Phase 2: Writing Body Paragraphs with sentence-dependent pacing
     if (phase === 2) {
       const targetPara = data.paragraphs[currentParaIdx];
 
@@ -115,20 +116,32 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
           setCurrentParagraphText((prev) => prev + nextChar);
         }, getCharDelay(nextChar));
       } else {
-        // Finished this paragraph
+        // Finished this paragraph!
+        // Determine if this is a short, emotionally heavy line
+        const isEmotionalSentence = 
+          targetPara.length < 40 ||
+          targetPara.includes('My love') ||
+          targetPara.includes('I miss you') ||
+          targetPara.includes('love you terribly') ||
+          targetPara.includes('ordinary things with you') ||
+          targetPara.includes('In my thoughts') ||
+          targetPara.includes('More than these words');
+
+        const delayToNext = isEmotionalSentence ? emotionalParaDelay : standardParaDelay;
+
         if (currentParaIdx < data.paragraphs.length - 1) {
           timeoutRef.current = setTimeout(() => {
             setCompletedParagraphs((prev) => [...prev, targetPara]);
             setCurrentParagraphText('');
             setCurrentParaIdx((idx) => idx + 1);
-          }, paraDelay);
+          }, delayToNext);
         } else {
-          // Finished all paragraphs! Move to emotional pause
+          // Finished all paragraphs! Enter stillness pause before closing
           timeoutRef.current = setTimeout(() => {
             setCompletedParagraphs((prev) => [...prev, targetPara]);
             setCurrentParagraphText('');
             setPhase(3);
-          }, emotionalPauseDelay);
+          }, finalLetterPauseDelay);
         }
       }
       return () => {
@@ -136,28 +149,28 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
       };
     }
 
-    // Phase 3: Emotional Pause before Closing
+    // Phase 3: Emotional Pause of Stillness (Maria absorbs the final words)
     if (phase === 3) {
       timeoutRef.current = setTimeout(() => {
         setPhase(4);
-      }, emotionalPauseDelay);
+      }, 1600 * speedMultiplier);
       return () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
       };
     }
 
-    // Phase 4: Writing Closing ("Loving U always,")
+    // Phase 4: Slowly writing the Closing ("Loving U always,")
     if (phase === 4) {
       if (closingText.length < data.closing.length) {
         const nextChar = data.closing[closingText.length];
         timeoutRef.current = setTimeout(() => {
           setClosingText((prev) => prev + nextChar);
-        }, getCharDelay(nextChar));
+        }, getCharDelay(nextChar) + 15);
       } else {
-        // Pause before signature
+        // Intimate pause before the signature flourish
         timeoutRef.current = setTimeout(() => {
           setPhase(5);
-        }, 1100 * speedMultiplier);
+        }, 1300 * speedMultiplier);
       }
       return () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -170,13 +183,13 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
         const nextChar = data.signature[signatureText.length];
         timeoutRef.current = setTimeout(() => {
           setSignatureText((prev) => prev + nextChar);
-        }, (baseCharDelay + 40) * speedMultiplier);
+        }, (baseCharDelay + 50) * speedMultiplier);
       } else {
-        // Completely finished!
+        // Visual stillness after signature
         timeoutRef.current = setTimeout(() => {
           setPhase(6);
           if (onComplete) onComplete();
-        }, 800);
+        }, 1200);
       }
       return () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -197,13 +210,13 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
     onComplete,
   ]);
 
-  // Helper to render text with italic asterisks formatted cleanly as true italics
+  // Helper to render text with italic asterisks formatted cleanly
   const renderFormattedContent = (text: string) => {
     const parts = text.split(/(\*[^*]+\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('*') && part.endsWith('*')) {
         return (
-          <em key={i} className="italic text-[#15100d] font-handwriting">
+          <em key={i} className="italic text-[#140f0c] font-handwriting">
             {part.slice(1, -1)}
           </em>
         );
@@ -213,12 +226,12 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
   };
 
   return (
-    <div className="font-handwriting text-[#1d1814] selection:bg-[#ebdcb9] leading-[1.85] sm:leading-[1.95] text-xl sm:text-2xl md:text-[26px]">
+    <div className="font-handwriting text-[#1c1713] selection:bg-[#ebdcb9] leading-[1.85] sm:leading-[1.95] text-xl sm:text-2xl md:text-[26px]">
       {/* 1. Salutation */}
       <div className="mb-6 sm:mb-8 min-h-[3rem]">
         {salutationText && (
           <h2
-            className="font-calligraphy text-3xl sm:text-4xl md:text-5xl text-[#1a1410] tracking-wide"
+            className="font-calligraphy text-3xl sm:text-4xl md:text-5xl text-[#18120e] tracking-wide"
             style={{ fontFamily: 'var(--font-calligraphy), cursive' }}
           >
             {salutationText}
@@ -258,7 +271,7 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-2xl sm:text-3xl md:text-4xl font-calligraphy text-[#1c1613]"
+            className="text-2xl sm:text-3xl md:text-4xl font-calligraphy text-[#1b1511]"
             style={{ fontFamily: 'var(--font-calligraphy), cursive' }}
           >
             {closingText}
@@ -272,11 +285,11 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
           <motion.div
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8 }}
             className="mt-3 sm:mt-4 pl-2"
           >
             <span
-              className="block text-4xl sm:text-5xl md:text-6xl text-[#18120e] font-signature tracking-wider"
+              className="block text-4xl sm:text-5xl md:text-6xl text-[#16100c] font-signature tracking-wider"
               style={{
                 fontFamily: 'var(--font-signature), cursive',
                 textShadow: '0 0.5px 1px rgba(0,0,0,0.15)',
@@ -289,11 +302,11 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
             {phase >= 5 && (
               <svg
                 viewBox="0 0 200 24"
-                className="w-36 sm:w-48 h-6 text-[#241a14] opacity-80 mt-1 stroke-current fill-none"
+                className="w-36 sm:w-48 h-6 text-[#221812] opacity-85 mt-1 stroke-current fill-none"
               >
                 <path
                   d="M 10 12 Q 60 4, 110 14 T 190 8"
-                  strokeWidth="2"
+                  strokeWidth="2.2"
                   strokeLinecap="round"
                 />
               </svg>
@@ -301,20 +314,6 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
           </motion.div>
         )}
       </div>
-
-      {/* Subtle completion stamp of love */}
-      <AnimatePresence>
-        {phase === 6 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 0.35, scale: 1 }}
-            transition={{ delay: 0.5, duration: 1.2 }}
-            className="mt-12 text-center text-xs tracking-[0.3em] uppercase font-serif text-[#7d5f3e] select-none"
-          >
-            — Sealed in love across all distance —
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
