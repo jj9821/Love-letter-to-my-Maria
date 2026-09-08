@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Stamp } from './Stamp';
 import { WaxSeal } from './WaxSeal';
+import { FountainPen } from './FountainPen';
 import { soundEffects } from './AudioEffects';
 
 interface EnvelopeProps {
@@ -44,12 +45,15 @@ export const Envelope: React.FC<EnvelopeProps> = ({
       }}
       transition={{ duration: 0.9, ease: 'easeOut' }}
     >
+      {/* Resting Fountain Pen prop beside the envelope */}
+      <FountainPen isVisible={!isOpen} />
+
       {/* Outer Envelope Ambient Directional Shadow on Table */}
       <motion.div
-        className="absolute inset-0 rounded-md bg-black/55 blur-xl translate-y-7 scale-95"
+        className="absolute inset-0 rounded-md bg-black/60 blur-xl translate-y-7 scale-95"
         animate={{
           scale: isOpen ? 0.9 : 0.96,
-          opacity: isOpen ? 0.25 : 0.6,
+          opacity: isOpen ? 0.25 : 0.65,
           y: isOpen ? 32 : 22,
         }}
         transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
@@ -79,7 +83,7 @@ export const Envelope: React.FC<EnvelopeProps> = ({
 
           {/* Letter Peeking Out from Slot & Pausing Partially Outside */}
           <motion.div
-            className="absolute left-[10%] right-[10%] h-[55%] rounded-t-sm bg-[#f9f4e8] shadow-md border-t border-l border-r border-[#d2c0a0]"
+            className="absolute left-[8%] right-[8%] h-[55%] rounded-t-sm bg-[#f9f4e8] shadow-md border-t border-l border-r border-[#d2c0a0]"
             initial={{ y: '25%', opacity: 0 }}
             animate={
               isOpen
@@ -93,7 +97,7 @@ export const Envelope: React.FC<EnvelopeProps> = ({
           >
             {/* Subtle stationery crease line visible on peek */}
             <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#8c6b45]/20 to-transparent mt-3.5" />
-            <div className="px-5 pt-2 text-[10px] font-serif italic text-[#7a5e3e]/40 select-none">
+            <div className="px-5 pt-2 text-[11px] font-serif italic text-[#7a5e3e]/50 select-none">
               Written across the miles...
             </div>
           </motion.div>
@@ -129,7 +133,6 @@ export const Envelope: React.FC<EnvelopeProps> = ({
         />
 
         {/* TOP FLAP (3D Animated Fold with Wax Seal) */}
-        {/* Tapered from 8% to 92% width so it never covers the Stamp or From address! */}
         <motion.div
           className="absolute top-0 left-[8%] right-[8%] h-[37%] origin-top preserve-3d cursor-pointer"
           style={{
@@ -198,7 +201,7 @@ export const Envelope: React.FC<EnvelopeProps> = ({
           </div>
 
           {/* LOWER SECTION: Recipient Calligraphy (Completely below the wax seal) */}
-          <div className="flex flex-col items-center justify-center text-center mt-auto pb-4 sm:pb-6 relative z-30">
+          <div className="flex flex-col items-center justify-center text-center mt-auto pb-5 sm:pb-8 relative z-30">
             
             {/* Subtle header above name */}
             <div className="flex items-center gap-2 mb-1.5 opacity-85">
@@ -226,12 +229,6 @@ export const Envelope: React.FC<EnvelopeProps> = ({
               <span className="text-xs sm:text-sm text-[#5c4129] font-serif italic">Only for her eyes</span>
               <span className="h-[1px] w-8 sm:w-14 bg-[#91704c]" />
             </div>
-          </div>
-
-          {/* BOTTOM CORNER FOOTERS */}
-          <div className="w-full flex justify-between items-center text-[9px] sm:text-[10px] text-[#78593a] tracking-widest font-serif uppercase opacity-75 px-1 pt-1">
-            <span>Confidential & Personal</span>
-            <span>By Hand & Heart</span>
           </div>
 
         </div>

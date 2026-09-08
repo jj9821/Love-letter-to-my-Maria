@@ -1,29 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Envelope } from '@/components/Envelope';
 import { Letter } from '@/components/Letter';
-import { Controls } from '@/components/Controls';
+import { Memories } from '@/components/Memories';
 import { AmbientBackground } from '@/components/AmbientBackground';
 import { letterData } from '@/data/letter';
 import { soundEffects } from '@/components/AudioEffects';
 
-type LetterStage = 'closed' | 'opening' | 'extracted' | 'unfolded' | 'reading';
+type LetterStage = 'closed' | 'opening' | 'extracted' | 'unfolded' | 'reading' | 'memories';
 
 export default function Home() {
   const [stage, setStage] = useState<LetterStage>('closed');
-  // Fixed slow, intimate reading pace (multiplier 1.4 for natural handwriting)
-  const slowSpeedMultiplier = 1.4;
+  // Fixed slow, intimate handwriting pace (multiplier 1.35)
+  const slowSpeedMultiplier = 1.35;
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [isSkipped, setIsSkipped] = useState<boolean>(false);
-  const [isCompleted, setIsCompleted] = useState<boolean>(false);
+  const [isMusicOn, setIsMusicOn] = useState<boolean>(false);
+
+  // Subscribe to sound effects music status
+  useEffect(() => {
+    const unsubscribe = soundEffects.subscribe((playing) => {
+      setIsMusicOn(playing);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Cinematic physical opening sequence
   const handleOpenEnvelope = () => {
     if (stage !== 'closed') return;
 
-    // Start background music as soon as envelope is clicked
+    // Start background music as soon as envelope is opened
     soundEffects.playBackgroundMusic();
 
     // Step 1: Wax seal breaks, flap lifts open, letter top becomes visible
@@ -38,35 +46,77 @@ export default function Home() {
     // Step 3: Letter unfolds along creases and expands to center
     setTimeout(() => {
       setStage('unfolded');
-    }, 2200);
+    }, 2300);
 
     // Step 4: Ready to begin handwriting
     setTimeout(() => {
       setStage('reading');
-    }, 3100);
+    }, 3200);
   };
 
-  // Re-seal to experience again
-  const handleReplay = () => {
-    soundEffects.stopBackgroundMusic();
-    setIsSkipped(false);
-    setIsCompleted(false);
-    setIsPaused(false);
-    setStage('closed');
+  // Physical folding interaction: letter folds away and returns to sealed envelope
+  const handleFoldLetter = () => {
+    soundEffects.playPaperRustle();
+    setStage('extracted');
+
+    setTimeout(() => {
+      setStage('opening');
+    }, 900);
+
+    setTimeout(() => {
+      setStage('closed');
+      setIsSkipped(false);
+      setIsPaused(false);
+    }, 1900);
+  };
+
+  // Transition to physical memories keepsakes
+  const handleDiscoverMemories = () => {
+    setStage('memories');
+    // Gently scroll to keepsakes
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth',
+      });
+    }, 300);
+  };
+
+  // Return from memories back to reading letter
+  const handleCloseMemories = () => {
+    setStage('reading');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSkip = () => {
-    setIsSkipped(true);
-    setIsCompleted(true);
+  // Toggle unobtrusive music in quiet corner
+  const handleToggleMusic = () => {
+    soundEffects.toggleBackgroundMusic();
   };
 
-  const isReadingActive = stage === 'unfolded' || stage === 'reading';
+  const isReadingOrMemories = stage === 'unfolded' || stage === 'reading' || stage === 'memories';
 
   return (
     <main className="min-h-screen relative flex flex-col justify-center items-center px-4 py-8 sm:py-16 overflow-x-hidden">
       {/* Dynamic Candlelit Atmosphere with Reading Dimming */}
-      <AmbientBackground isReading={isReadingActive} />
+      <AmbientBackground isReading={isReadingOrMemories} />
+
+      {/* Unobtrusive Minimal Sound Control (♫ in quiet top corner) */}
+      <div className="fixed top-5 right-5 sm:top-7 sm:right-8 z-50">
+        <button
+          type="button"
+          onClick={handleToggleMusic}
+          aria-label={isMusicOn ? 'Mute music' : 'Play music'}
+          className="p-2 text-sm sm:text-base font-serif transition-all duration-300 select-none text-[#d5c2a3]/40 hover:text-[#d5c2a3]/90 focus:outline-none"
+          title={isMusicOn ? 'Music playing • tap to pause' : 'Music paused • tap to play'}
+        >
+          <span className="inline-block relative">
+            ♫
+            {!isMusicOn && (
+              <span className="absolute left-0 top-1/2 w-full h-[1.5px] bg-[#d5c2a3]/60 -rotate-45" />
+            )}
+          </span>
+        </button>
+      </div>
 
       <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
         {/* Stage 1: Closed or Opening Envelope */}
@@ -100,37 +150,40 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* Stage 2: Emerged & Unfolded Letter with Smooth Cinematic Camera Focus */}
+        {/* Stage 2: Emerged & Unfolded Letter with Smooth Cinematic Focus */}
         <AnimatePresence>
-          {isReadingActive && (
+          {isReadingOrMemories && (
             <motion.div
               key="letter-view"
               className="w-full"
               initial={{ opacity: 0, y: 40, scale: 0.94 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 30, scale: 0.92 }}
               transition={{ duration: 1.4, ease: [0.25, 1, 0.4, 1] }}
             >
               <Letter
-                stage={stage}
+                stage={stage === 'memories' ? 'reading' : stage}
                 speedMultiplier={slowSpeedMultiplier}
                 isPaused={isPaused}
                 isSkipped={isSkipped}
-                onComplete={() => setIsCompleted(true)}
+                onDiscoverMemories={handleDiscoverMemories}
+                onFoldLetter={handleFoldLetter}
               />
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
 
-      {/* Floating Reading Controls */}
-      <Controls
-        isStarted={isReadingActive}
-        isPaused={isPaused}
-        onTogglePause={() => setIsPaused(!isPaused)}
-        onSkip={handleSkip}
-        onReplay={handleReplay}
-        isCompleted={isCompleted}
-      />
+        {/* Stage 3: Tabletop Keepsakes & Memories */}
+        <AnimatePresence>
+          {stage === 'memories' && (
+            <Memories
+              isVisible={stage === 'memories'}
+              onClose={handleCloseMemories}
+              onFoldLetter={handleFoldLetter}
+            />
+          )}
+        </AnimatePresence>
+      </div>
     </main>
   );
 }
