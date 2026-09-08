@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HandwritingText } from './HandwritingText';
 import { letterData } from '../data/letter';
@@ -24,15 +24,27 @@ export const Letter: React.FC<LetterProps> = ({
   const isWritingStarted = stage === 'unfolded' || stage === 'reading';
   const [isLetterCompleted, setIsLetterCompleted] = useState(false);
   const [showSecretNote, setShowSecretNote] = useState(false);
+  const [cornerHintActive, setCornerHintActive] = useState(false);
 
   const handleLetterComplete = () => {
     setIsLetterCompleted(true);
     if (onComplete) onComplete();
   };
 
+  // 5 seconds after the letter finishes completely, introduce the subtle corner lift hint
+  useEffect(() => {
+    if (isLetterCompleted && !showSecretNote) {
+      const timer = setTimeout(() => {
+        setCornerHintActive(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isLetterCompleted, showSecretNote]);
+
   const handleToggleSecretNote = () => {
     soundEffects.playPaperRustle();
     setShowSecretNote(!showSecretNote);
+    setCornerHintActive(false);
   };
 
   return (
@@ -53,7 +65,7 @@ export const Letter: React.FC<LetterProps> = ({
       <div
         className="parchment-paper relative rounded-sm p-6 sm:p-12 md:p-16 overflow-hidden transition-all duration-700"
         style={{
-          boxShadow: '0 25px 65px -12px rgba(10, 6, 4, 0.7), 0 0 1px 1px rgba(170, 140, 95, 0.3)',
+          boxShadow: '0 25px 65px -12px rgba(8, 5, 3, 0.75), 0 0 1px 1px rgba(170, 140, 95, 0.3)',
           border: '1px solid rgba(215, 190, 145, 0.5)',
         }}
       >
@@ -108,12 +120,16 @@ export const Letter: React.FC<LetterProps> = ({
         {/* EASTER EGG 3: Subtle aged tea drop / water mark in bottom-left margin */}
         <div className="tea-stain bottom-14 left-8 sm:left-14 opacity-75" />
 
-        {/* Dog-eared subtle corner fold at bottom right */}
+        {/* Corner Fold with Gentle Interactive Lift Hint */}
         <div 
-          className="absolute bottom-0 right-0 w-8 h-8 pointer-events-none opacity-20"
+          onClick={handleToggleSecretNote}
+          className={`absolute bottom-0 right-0 w-10 h-10 cursor-pointer z-30 transition-transform ${
+            cornerHintActive ? 'corner-lift-hint opacity-80' : 'opacity-25 hover:opacity-60'
+          }`}
+          title="Something tucked beneath..."
           style={{
-            background: 'linear-gradient(135deg, transparent 50%, #c4ab82 50%)',
-            boxShadow: '-1px -1px 2px rgba(0,0,0,0.15)',
+            background: 'linear-gradient(135deg, transparent 50%, #cca974 50%)',
+            boxShadow: '-2px -2px 5px rgba(0,0,0,0.2)',
           }}
         />
 
@@ -141,10 +157,10 @@ export const Letter: React.FC<LetterProps> = ({
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2, duration: 1.2 }}
+              transition={{ delay: 1.5, duration: 1.2 }}
               className="mt-12 sm:mt-16 pt-6 border-t border-[#ddceb0]/50 relative z-20"
             >
-              {/* Subtle trigger link */}
+              {/* Subtle trigger line */}
               <button
                 type="button"
                 onClick={handleToggleSecretNote}

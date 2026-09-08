@@ -14,6 +14,7 @@ export const WaxSeal: React.FC<WaxSealProps> = ({ isBroken = false, onClick }) =
   const handleClick = () => {
     if (isBroken) return;
     setIsPressed(true);
+    // Trigger callback which handles the 300ms anticipation sequence
     if (onClick) {
       onClick();
     }
@@ -25,7 +26,7 @@ export const WaxSeal: React.FC<WaxSealProps> = ({ isBroken = false, onClick }) =
       onClick={handleClick}
       aria-label="Open sealed letter"
       className="relative group focus:outline-none cursor-pointer select-none"
-      whileHover={{ scale: isBroken ? 1 : 1.04 }}
+      whileHover={{ scale: isBroken ? 1 : 1.025 }}
       whileTap={{ scale: isBroken ? 1 : 0.96 }}
       animate={
         isBroken
@@ -36,6 +37,11 @@ export const WaxSeal: React.FC<WaxSealProps> = ({ isBroken = false, onClick }) =
               rotate: -9,
               transition: { duration: 0.85, ease: [0.33, 1, 0.68, 1] },
             }
+          : isPressed
+          ? {
+              scale: 0.96,
+              transition: { duration: 0.25 },
+            }
           : {
               scale: 1,
               opacity: 1,
@@ -44,8 +50,8 @@ export const WaxSeal: React.FC<WaxSealProps> = ({ isBroken = false, onClick }) =
             }
       }
     >
-      {/* Outer irregular melted wax puddle shape */}
-      <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.58)]">
+      {/* Outer irregular melted wax puddle shape with handcrafted depth */}
+      <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_10px_20px_rgba(0,0,0,0.7)] transition-all duration-300">
         <svg
           viewBox="0 0 100 100"
           className="w-full h-full overflow-visible"
@@ -167,9 +173,9 @@ export const WaxSeal: React.FC<WaxSealProps> = ({ isBroken = false, onClick }) =
           />
         </svg>
 
-        {/* Delicate pulse glow on hover when closed */}
+        {/* Quiet subtle hover highlight - not flashy */}
         {!isBroken && (
-          <span className="absolute inset-0 rounded-full border border-amber-300/25 group-hover:border-amber-300/50 transition-colors animate-pulse pointer-events-none" />
+          <span className="absolute inset-0 rounded-full border border-amber-300/20 group-hover:border-amber-300/40 transition-colors pointer-events-none" />
         )}
       </div>
     </motion.button>

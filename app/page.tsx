@@ -91,6 +91,7 @@ export default function Home() {
             >
               <Envelope
                 isOpen={stage !== 'closed'}
+                isPeeking={stage === 'opening' || stage === 'extracted'}
                 onOpen={handleOpenEnvelope}
                 recipient={letterData.recipient}
                 sender={letterData.sender}

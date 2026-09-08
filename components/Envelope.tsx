@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Stamp } from './Stamp';
 import { WaxSeal } from './WaxSeal';
@@ -8,6 +8,7 @@ import { soundEffects } from './AudioEffects';
 
 interface EnvelopeProps {
   isOpen: boolean;
+  isPeeking?: boolean;
   onOpen: () => void;
   recipient: string;
   sender: string;
@@ -15,33 +16,41 @@ interface EnvelopeProps {
 
 export const Envelope: React.FC<EnvelopeProps> = ({
   isOpen,
+  isPeeking = false,
   onOpen,
   recipient,
   sender,
 }) => {
+  const [isAnticipating, setIsAnticipating] = useState(false);
+
   const handleOpenClick = () => {
-    if (isOpen) return;
-    soundEffects.playWaxSealBreak();
-    soundEffects.playBackgroundMusic();
-    onOpen();
+    if (isOpen || isAnticipating) return;
+    setIsAnticipating(true);
+
+    // 300ms anticipation pause before the physical breaking & flap lifting sequence begins
+    setTimeout(() => {
+      soundEffects.playWaxSealBreak();
+      soundEffects.playBackgroundMusic();
+      onOpen();
+    }, 320);
   };
 
   return (
     <motion.div 
       className="relative w-full max-w-[580px] aspect-[1.5/1] mx-auto select-none perspective-1000"
       animate={{
-        rotate: isOpen ? [-0.4, 0.4, 0] : 0,
-        y: isOpen ? 6 : 0,
+        rotate: isOpen ? [-0.3, 0.3, 0] : 0,
+        y: isOpen ? 8 : 0,
       }}
       transition={{ duration: 0.9, ease: 'easeOut' }}
     >
-      {/* Outer Envelope Ambient Shadow on Table */}
+      {/* Outer Envelope Ambient Directional Shadow on Table */}
       <motion.div
-        className="absolute inset-0 rounded-md bg-black/50 blur-xl translate-y-6 scale-95"
+        className="absolute inset-0 rounded-md bg-black/55 blur-xl translate-y-7 scale-95"
         animate={{
           scale: isOpen ? 0.9 : 0.96,
-          opacity: isOpen ? 0.25 : 0.55,
-          y: isOpen ? 30 : 20,
+          opacity: isOpen ? 0.25 : 0.6,
+          y: isOpen ? 32 : 22,
         }}
         transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
       />
@@ -50,7 +59,7 @@ export const Envelope: React.FC<EnvelopeProps> = ({
       <div 
         className="relative w-full h-full rounded-sm overflow-visible envelope-paper transition-shadow duration-700"
         style={{
-          boxShadow: '0 20px 45px -10px rgba(0,0,0,0.55), 0 5px 15px rgba(0,0,0,0.25), inset 0 0 50px rgba(175,145,110,0.35)',
+          boxShadow: '0 20px 45px -10px rgba(0,0,0,0.6), 0 5px 15px rgba(0,0,0,0.3), inset 0 0 50px rgba(175,145,110,0.35)',
           border: '1px solid rgba(185, 155, 115, 0.5)',
         }}
       >
@@ -65,25 +74,28 @@ export const Envelope: React.FC<EnvelopeProps> = ({
               backgroundPosition: '0 0, 9px 9px',
             }}
           />
-          {/* Deep slot shadow */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/25" />
+          {/* Deep slot pocket shadow */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/25" />
 
-          {/* Letter Peeking Out from Slot when Flap Opens */}
+          {/* Letter Peeking Out from Slot & Pausing Partially Outside */}
           <motion.div
-            className="absolute left-[10%] right-[10%] h-[55%] rounded-t-sm bg-[#faf5ea] shadow-md border-t border-l border-r border-[#d4c3a3]"
-            initial={{ y: '20%', opacity: 0 }}
+            className="absolute left-[10%] right-[10%] h-[55%] rounded-t-sm bg-[#f9f4e8] shadow-md border-t border-l border-r border-[#d2c0a0]"
+            initial={{ y: '25%', opacity: 0 }}
             animate={
               isOpen
                 ? {
-                    y: '-28%',
+                    y: isPeeking ? '-38%' : '-30%',
                     opacity: 1,
-                    transition: { duration: 1.1, delay: 0.5, ease: [0.25, 1, 0.5, 1] },
+                    transition: { duration: 1.2, delay: 0.35, ease: [0.25, 1, 0.5, 1] },
                   }
-                : { y: '20%', opacity: 0 }
+                : { y: '25%', opacity: 0 }
             }
           >
-            {/* Subtle stationery crease hint */}
-            <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#8c6b45]/20 to-transparent mt-3" />
+            {/* Subtle stationery crease line visible on peek */}
+            <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#8c6b45]/20 to-transparent mt-3.5" />
+            <div className="px-5 pt-2 text-[10px] font-serif italic text-[#7a5e3e]/40 select-none">
+              Written across the miles...
+            </div>
           </motion.div>
         </div>
 
@@ -227,7 +239,7 @@ export const Envelope: React.FC<EnvelopeProps> = ({
       </div>
 
       {/* Gentle Tap Hint when closed */}
-      {!isOpen && (
+      {!isOpen && !isAnticipating && (
         <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}

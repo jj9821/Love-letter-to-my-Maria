@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LetterData } from '../data/letter';
+import { soundEffects } from './AudioEffects';
 
 interface HandwritingTextProps {
   data: LetterData;
@@ -179,6 +180,7 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
 
     // Phase 5: Writing Signature ("Joel")
     if (phase === 5) {
+      soundEffects.softenVolume();
       if (signatureText.length < data.signature.length) {
         const nextChar = data.signature[signatureText.length];
         timeoutRef.current = setTimeout(() => {

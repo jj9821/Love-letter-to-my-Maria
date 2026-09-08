@@ -84,6 +84,7 @@ class SoundEngine {
     if (!this.bgAudio) return;
 
     this.bgAudio.muted = this.isMuted;
+    this.bgAudio.volume = 0.6;
     const playPromise = this.bgAudio.play();
     if (playPromise !== undefined) {
       playPromise
@@ -97,6 +98,20 @@ class SoundEngine {
     }
   }
 
+  // Softens volume during final signature / emotional stillness
+  public softenVolume() {
+    if (!this.bgAudio) return;
+    let vol = this.bgAudio.volume;
+    const fadeInterval = setInterval(() => {
+      if (this.bgAudio && vol > 0.35) {
+        vol = Math.max(0.35, vol - 0.05);
+        this.bgAudio.volume = vol;
+      } else {
+        clearInterval(fadeInterval);
+      }
+    }, 400);
+  }
+
   public pauseBackgroundMusic() {
     if (this.bgAudio && !this.bgAudio.paused) {
       this.bgAudio.pause();
@@ -107,6 +122,7 @@ class SoundEngine {
     if (this.bgAudio) {
       this.bgAudio.pause();
       this.bgAudio.currentTime = 0;
+      this.bgAudio.volume = 0.6;
       this.isMusicActive = false;
       this.notifyListeners(false);
     }
