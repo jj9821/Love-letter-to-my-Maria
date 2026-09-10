@@ -6,6 +6,7 @@ import { Stamp } from './Stamp';
 import { WaxSeal } from './WaxSeal';
 import { FountainPen } from './FountainPen';
 import { soundEffects } from './AudioEffects';
+import { LetterData } from '../data/letter';
 
 interface EnvelopeProps {
   isOpen: boolean;
@@ -13,6 +14,10 @@ interface EnvelopeProps {
   onOpen: () => void;
   recipient: string;
   sender: string;
+  lettersList?: LetterData[];
+  activeLetterId?: string;
+  onSelectLetter?: (id: string) => void;
+  activeLetterSubtitle?: string;
 }
 
 export const Envelope: React.FC<EnvelopeProps> = ({
@@ -21,6 +26,10 @@ export const Envelope: React.FC<EnvelopeProps> = ({
   onOpen,
   recipient,
   sender,
+  lettersList,
+  activeLetterId,
+  onSelectLetter,
+  activeLetterSubtitle,
 }) => {
   const [isAnticipating, setIsAnticipating] = useState(false);
 
@@ -97,8 +106,8 @@ export const Envelope: React.FC<EnvelopeProps> = ({
           >
             {/* Subtle stationery crease line visible on peek */}
             <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#8c6b45]/20 to-transparent mt-3.5" />
-            <div className="px-5 pt-2 text-[11px] font-serif italic text-[#7a5e3e]/50 select-none">
-              Written across the miles...
+            <div className="px-5 pt-2 text-[11px] font-serif italic text-[#7a5e3e]/70 select-none truncate">
+              {activeLetterSubtitle || 'In the quiet hours • From the deepest part of my heart'}
             </div>
           </motion.div>
         </div>
@@ -235,13 +244,54 @@ export const Envelope: React.FC<EnvelopeProps> = ({
 
       </div>
 
+      {/* Tabletop Letter Bundle Selection (Subtle folded paper bookmarks on the desk) */}
+      {!isOpen && lettersList && lettersList.length > 1 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9, duration: 1 }}
+          className="mt-6 flex justify-center items-center gap-3 sm:gap-4 select-none"
+        >
+          {lettersList.map((item) => {
+            const isSelected = item.id === activeLetterId;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  soundEffects.playPaperRustle();
+                  if (onSelectLetter) onSelectLetter(item.id);
+                }}
+                className={`group px-3 py-1.5 rounded-sm transition-all duration-300 text-left border cursor-pointer ${
+                  isSelected
+                    ? 'bg-[#2b1f16]/90 border-[#cca673]/60 shadow-[0_4px_12px_rgba(0,0,0,0.5)] scale-105'
+                    : 'bg-[#18120c]/60 border-[#6b5037]/30 hover:border-[#9c754d]/60 opacity-65 hover:opacity-95'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] uppercase font-serif tracking-widest ${isSelected ? 'text-[#e5cfa8] font-bold' : 'text-[#a98e6e]'}`}>
+                    {item.title}
+                  </span>
+                  {isSelected && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#cca673]" />
+                  )}
+                </div>
+                <span className="block text-xs sm:text-sm font-handwriting text-[#f4eee2] italic">
+                  {item.subtitle || item.salutation}
+                </span>
+              </button>
+            );
+          })}
+        </motion.div>
+      )}
+
       {/* Gentle Tap Hint when closed */}
       {!isOpen && !isAnticipating && (
         <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 1 }}
-          className="text-center mt-8 text-[#d5c3a3]/80 font-serif italic text-sm sm:text-base flex items-center justify-center gap-2 select-none"
+          transition={{ delay: 1.2, duration: 1 }}
+          className="text-center mt-5 text-[#d5c3a3]/80 font-serif italic text-sm sm:text-base flex items-center justify-center gap-2 select-none"
         >
           <span className="inline-block w-6 h-[1px] bg-[#d5c3a3]/40" />
           <span>Tap the wax seal to open Maria&apos;s letter</span>

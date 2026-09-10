@@ -1,4 +1,4 @@
-// Audio Effects Engine supporting physical paper sounds and custom background music (/audio.mp3)
+// Audio Effects Engine supporting physical paper sounds and custom background music (/audio.mp3, /audio2.mp3)
 
 type MusicStateListener = (isPlaying: boolean) => void;
 
@@ -6,6 +6,7 @@ class SoundEngine {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
   private bgAudio: HTMLAudioElement | null = null;
+  private currentSrc: string = '/audio.mp3';
   private isMusicActive: boolean = false;
   private listeners: Set<MusicStateListener> = new Set();
 
@@ -27,9 +28,12 @@ class SoundEngine {
     }
   }
 
-  private initBackgroundAudio() {
-    if (!this.bgAudio && typeof window !== 'undefined') {
-      this.bgAudio = new Audio('/audio.mp3');
+  private initBackgroundAudio(src: string = '/audio.mp3') {
+    if (typeof window === 'undefined') return;
+
+    if (!this.bgAudio) {
+      this.currentSrc = src;
+      this.bgAudio = new Audio(src);
       this.bgAudio.loop = true;
       this.bgAudio.preload = 'auto';
       this.bgAudio.volume = 0.6;
@@ -48,6 +52,23 @@ class SoundEngine {
         this.isMusicActive = false;
         this.notifyListeners(false);
       });
+
+      // Fallback gracefully to default /audio.mp3 if custom /audio2.mp3 is not yet uploaded
+      this.bgAudio.addEventListener('error', () => {
+        if (this.currentSrc !== '/audio.mp3' && this.bgAudio) {
+          console.log('Custom audio source not found, gracefully falling back to /audio.mp3');
+          this.currentSrc = '/audio.mp3';
+          this.bgAudio.src = '/audio.mp3';
+          this.bgAudio.play().catch(() => {});
+        }
+      });
+    } else if (src && this.currentSrc !== src) {
+      this.currentSrc = src;
+      const wasPlaying = !this.bgAudio.paused;
+      this.bgAudio.src = src;
+      if (wasPlaying) {
+        this.bgAudio.play().catch(() => {});
+      }
     }
   }
 
@@ -78,9 +99,10 @@ class SoundEngine {
     return this.isMusicActive;
   }
 
-  // Starts playing the user's custom audio.mp3 immediately as the letter opens
-  public playBackgroundMusic() {
-    this.initBackgroundAudio();
+  // Starts playing background music (accepts optional custom song source)
+  public playBackgroundMusic(src?: string) {
+    const targetSrc = src || this.currentSrc || '/audio.mp3';
+    this.initBackgroundAudio(targetSrc);
     if (!this.bgAudio) return;
 
     this.bgAudio.muted = this.isMuted;
@@ -129,7 +151,9 @@ class SoundEngine {
   }
 
   public toggleBackgroundMusic(): boolean {
-    this.initBackgroundAudio();
+    if (!this.bgAudio) {
+      this.initBackgroundAudio();
+    }
     if (!this.bgAudio) return false;
 
     if (this.bgAudio.paused) {

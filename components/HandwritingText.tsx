@@ -120,13 +120,21 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
         // Finished this paragraph!
         // Determine if this is a short, emotionally heavy line
         const isEmotionalSentence = 
-          targetPara.length < 40 ||
+          targetPara.length < 48 ||
           targetPara.includes('My love') ||
+          targetPara.includes('My Maria') ||
           targetPara.includes('I miss you') ||
           targetPara.includes('love you terribly') ||
           targetPara.includes('ordinary things with you') ||
           targetPara.includes('In my thoughts') ||
-          targetPara.includes('More than these words');
+          targetPara.includes('More than these words') ||
+          targetPara.includes('Why now?') ||
+          targetPara.includes('I love you.') ||
+          targetPara.includes('Not yet.') ||
+          targetPara.includes('It was you.') ||
+          targetPara.includes('It has always been you.') ||
+          targetPara.includes('For you.') ||
+          targetPara.includes('For us.');
 
         const delayToNext = isEmotionalSentence ? emotionalParaDelay : standardParaDelay;
 
@@ -212,10 +220,17 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
     onComplete,
   ]);
 
-  // Helper to render text with italic asterisks formatted cleanly
+  // Helper to render text with bold and italic asterisks formatted cleanly
   const renderFormattedContent = (text: string) => {
-    const parts = text.split(/(\*[^*]+\*)/g);
+    const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
     return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <strong key={i} className="font-bold text-[#140f0c] font-handwriting tracking-wide">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
       if (part.startsWith('*') && part.endsWith('*')) {
         return (
           <em key={i} className="italic text-[#140f0c] font-handwriting">

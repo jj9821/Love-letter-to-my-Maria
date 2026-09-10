@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HandwritingText } from './HandwritingText';
-import { letterData } from '../data/letter';
+import { LetterData, letterData as defaultLetterData } from '../data/letter';
 import { soundEffects } from './AudioEffects';
 
 interface LetterProps {
@@ -11,9 +11,12 @@ interface LetterProps {
   speedMultiplier: number;
   isPaused: boolean;
   isSkipped: boolean;
+  data?: LetterData;
   onComplete?: () => void;
   onDiscoverMemories?: () => void;
   onFoldLetter?: () => void;
+  onSwitchLetter?: () => void;
+  alternateLetterTitle?: string;
 }
 
 export const Letter: React.FC<LetterProps> = ({
@@ -21,10 +24,14 @@ export const Letter: React.FC<LetterProps> = ({
   speedMultiplier,
   isPaused,
   isSkipped,
+  data,
   onComplete,
   onDiscoverMemories,
   onFoldLetter,
+  onSwitchLetter,
+  alternateLetterTitle,
 }) => {
+  const activeData = data || defaultLetterData;
   const isWritingStarted = stage === 'unfolded' || stage === 'reading';
   const [isLetterCompleted, setIsLetterCompleted] = useState(false);
   
@@ -37,6 +44,14 @@ export const Letter: React.FC<LetterProps> = ({
 
   // Read Aloud intimate state
   const [isReadingAloud, setIsReadingAloud] = useState(false);
+
+  // Reset completion when data changes
+  useEffect(() => {
+    setIsLetterCompleted(false);
+    setIsSecretNoteRevealed(false);
+    setFlowerHintActive(false);
+    setPhotoCornerRevealed(false);
+  }, [activeData.id]);
 
   const handleLetterComplete = () => {
     setIsLetterCompleted(true);
@@ -82,12 +97,17 @@ export const Letter: React.FC<LetterProps> = ({
   const handleToggleReadAloud = () => {
     soundEffects.playPaperRustle();
     setIsReadingAloud(!isReadingAloud);
-    // Plays custom background music softly or enhances audio ambiance
-    soundEffects.playBackgroundMusic();
+    soundEffects.playBackgroundMusic(activeData.audioSrc);
   };
+
+  const secretNoteContent = activeData.secretNote?.note || 
+    "Whenever you feel the distance between us, close your eyes and remember: every second apart is just counting down to the moment I get to hold you again. I love you, Maria. Always.";
+  
+  const secretNoteClosing = activeData.secretNote?.closing || "Forever yours, Joel";
 
   return (
     <motion.div
+      key={activeData.id}
       className="w-full max-w-3xl mx-auto my-6 sm:my-10 perspective-1000 relative"
       initial={{ opacity: 0, scale: 0.92, y: 40 }}
       animate={{
@@ -155,7 +175,7 @@ export const Letter: React.FC<LetterProps> = ({
 
         {/* Letter Date/Place Header & Natural "Hear me read this." note */}
         <div className="flex flex-wrap justify-between items-center mb-8 sm:mb-10 text-xs sm:text-sm font-serif italic text-[#6e5133] opacity-85 border-b border-[#ddceb0]/55 pb-3 gap-2">
-          <span>Late at night • Thinking only of you</span>
+          <span>{activeData.dateTag || 'Late at night • Thinking only of you'}</span>
           
           <div className="flex items-center gap-3">
             {/* Intimate "Hear me read this." marginal note */}
@@ -168,14 +188,15 @@ export const Letter: React.FC<LetterProps> = ({
               {isReadingAloud ? '♪ Reading along with you' : 'Hear me read this.'}
             </button>
             <span className="opacity-40">•</span>
-            <span className="font-handwriting text-base text-[#523922]">For Maria Mathew</span>
+            <span className="font-handwriting text-base text-[#523922]">For {activeData.recipient}</span>
           </div>
         </div>
 
         {/* Dynamic Live Handwriting Engine */}
         <div className="relative z-10">
           <HandwritingText
-            data={letterData}
+            key={activeData.id}
+            data={activeData}
             isStarted={isWritingStarted}
             speedMultiplier={speedMultiplier}
             isPaused={isPaused}
@@ -276,12 +297,12 @@ export const Letter: React.FC<LetterProps> = ({
                       className="font-handwriting text-xl sm:text-2xl text-[#1a1410] leading-relaxed italic"
                       style={{ fontFamily: 'var(--font-handwriting), cursive' }}
                     >
-                      &ldquo;Whenever you feel the distance between us, close your eyes and remember: every second apart is just counting down to the moment I get to hold you again. I love you, Maria. Always.&rdquo;
+                      &ldquo;{secretNoteContent}&rdquo;
                     </p>
 
                     <div className="mt-3 text-right">
                       <span className="font-calligraphy text-2xl sm:text-3xl text-[#1a1410]">
-                        Forever yours, Joel
+                        {secretNoteClosing}
                       </span>
                     </div>
 
@@ -345,23 +366,39 @@ export const Letter: React.FC<LetterProps> = ({
           )}
         </AnimatePresence>
 
-        {/* Bottom subtle stationery imprint & Physical "Fold this letter." Instruction */}
+        {/* Bottom subtle stationery imprint & Physical Navigation / Fold Actions */}
         <div className="mt-14 sm:mt-18 pt-4 flex flex-col sm:flex-row justify-between items-center text-xs font-serif italic text-[#806345] opacity-75 border-t border-[#ddceb0]/35 gap-3">
           <span>Kept close to heart • Sent with all of me</span>
 
-          {/* PHYSICAL INTERACTION: "Fold this letter." */}
-          {isLetterCompleted && (
-            <button
-              type="button"
-              onClick={() => {
-                soundEffects.playPaperRustle();
-                if (onFoldLetter) onFoldLetter();
-              }}
-              className="font-handwriting text-lg sm:text-xl text-[#6b4e33] hover:text-[#1e150f] underline decoration-[#6b4e33]/30 underline-offset-4 transition-colors cursor-pointer select-none"
-            >
-              Fold this letter.
-            </button>
-          )}
+          <div className="flex items-center gap-4 flex-wrap justify-end">
+            {/* SWITCH TO ALTERNATE LETTER */}
+            {onSwitchLetter && alternateLetterTitle && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundEffects.playPaperRustle();
+                  onSwitchLetter();
+                }}
+                className="font-handwriting text-lg sm:text-xl text-[#7d5d3b] hover:text-[#21160e] underline decoration-[#7d5d3b]/30 underline-offset-4 transition-colors cursor-pointer select-none"
+              >
+                Read {alternateLetterTitle} →
+              </button>
+            )}
+
+            {/* PHYSICAL INTERACTION: "Fold this letter." */}
+            {isLetterCompleted && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundEffects.playPaperRustle();
+                  if (onFoldLetter) onFoldLetter();
+                }}
+                className="font-handwriting text-lg sm:text-xl text-[#6b4e33] hover:text-[#1e150f] underline decoration-[#6b4e33]/30 underline-offset-4 transition-colors cursor-pointer select-none"
+              >
+                Fold this letter.
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>

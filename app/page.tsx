@@ -6,18 +6,24 @@ import { Envelope } from '@/components/Envelope';
 import { Letter } from '@/components/Letter';
 import { Memories } from '@/components/Memories';
 import { AmbientBackground } from '@/components/AmbientBackground';
-import { letterData } from '@/data/letter';
+import { letters } from '@/data/letter';
 import { soundEffects } from '@/components/AudioEffects';
 
 type LetterStage = 'closed' | 'opening' | 'extracted' | 'unfolded' | 'reading' | 'memories';
 
 export default function Home() {
   const [stage, setStage] = useState<LetterStage>('closed');
+  // Default to the newly added letter (Letter II)
+  const [activeLetterId, setActiveLetterId] = useState<string>('letter-2');
+  
   // Fixed slow, intimate handwriting pace (multiplier 1.35)
   const slowSpeedMultiplier = 1.35;
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [isSkipped, setIsSkipped] = useState<boolean>(false);
   const [isMusicOn, setIsMusicOn] = useState<boolean>(false);
+
+  const currentLetter = letters.find((l) => l.id === activeLetterId) || letters[1];
+  const alternateLetter = letters.find((l) => l.id !== activeLetterId);
 
   // Subscribe to sound effects music status
   useEffect(() => {
@@ -32,7 +38,7 @@ export default function Home() {
     if (stage !== 'closed') return;
 
     // Start background music as soon as envelope is opened
-    soundEffects.playBackgroundMusic();
+    soundEffects.playBackgroundMusic(currentLetter.audioSrc);
 
     // Step 1: Wax seal breaks, flap lifts open, letter top becomes visible
     setStage('opening');
@@ -70,10 +76,35 @@ export default function Home() {
     }, 1900);
   };
 
+  // Switch between letters seamlessly
+  const handleSwitchLetter = () => {
+    if (!alternateLetter) return;
+    soundEffects.playPaperRustle();
+    
+    // If currently reading, fold down then unfold the alternate letter
+    if (stage === 'reading' || stage === 'unfolded') {
+      setStage('extracted');
+      setTimeout(() => {
+        setActiveLetterId(alternateLetter.id);
+        soundEffects.playBackgroundMusic(alternateLetter.audioSrc);
+        setStage('unfolded');
+      }, 700);
+      setTimeout(() => {
+        setStage('reading');
+      }, 1600);
+    } else {
+      setActiveLetterId(alternateLetter.id);
+    }
+  };
+
+  // Select a letter directly from the envelope bundle on the desk
+  const handleSelectLetterOnDesk = (id: string) => {
+    setActiveLetterId(id);
+  };
+
   // Transition to physical memories keepsakes
   const handleDiscoverMemories = () => {
     setStage('memories');
-    // Gently scroll to keepsakes
     setTimeout(() => {
       window.scrollTo({
         top: document.body.scrollHeight,
@@ -106,7 +137,7 @@ export default function Home() {
           type="button"
           onClick={handleToggleMusic}
           aria-label={isMusicOn ? 'Mute music' : 'Play music'}
-          className="p-2 text-sm sm:text-base font-serif transition-all duration-300 select-none text-[#d5c2a3]/40 hover:text-[#d5c2a3]/90 focus:outline-none"
+          className="p-2 text-sm sm:text-base font-serif transition-all duration-300 select-none text-[#d5c2a3]/40 hover:text-[#d5c2a3]/90 focus:outline-none cursor-pointer"
           title={isMusicOn ? 'Music playing • tap to pause' : 'Music paused • tap to play'}
         >
           <span className="inline-block relative">
@@ -143,8 +174,12 @@ export default function Home() {
                 isOpen={stage !== 'closed'}
                 isPeeking={stage === 'opening' || stage === 'extracted'}
                 onOpen={handleOpenEnvelope}
-                recipient={letterData.recipient}
-                sender={letterData.sender}
+                recipient={currentLetter.recipient}
+                sender={currentLetter.sender}
+                lettersList={letters}
+                activeLetterId={activeLetterId}
+                onSelectLetter={handleSelectLetterOnDesk}
+                activeLetterSubtitle={currentLetter.subtitle || currentLetter.title}
               />
             </motion.div>
           )}
@@ -154,7 +189,7 @@ export default function Home() {
         <AnimatePresence>
           {isReadingOrMemories && (
             <motion.div
-              key="letter-view"
+              key={`letter-view-${currentLetter.id}`}
               className="w-full"
               initial={{ opacity: 0, y: 40, scale: 0.94 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -163,11 +198,14 @@ export default function Home() {
             >
               <Letter
                 stage={stage === 'memories' ? 'reading' : stage}
+                data={currentLetter}
                 speedMultiplier={slowSpeedMultiplier}
                 isPaused={isPaused}
                 isSkipped={isSkipped}
                 onDiscoverMemories={handleDiscoverMemories}
                 onFoldLetter={handleFoldLetter}
+                onSwitchLetter={handleSwitchLetter}
+                alternateLetterTitle={alternateLetter?.title}
               />
             </motion.div>
           )}
