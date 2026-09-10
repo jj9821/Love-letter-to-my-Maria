@@ -229,7 +229,7 @@ export const letters: LetterData[] = [
       note: 'I don\'t expect you to forget the hurt overnight. But I will spend every tomorrow proving to you that your heart was right to believe in me. I love you, Maria.',
       closing: 'Forever yours, Joel',
     },
-    audioSrc: '/audio2.mp3',
+    audioSrc: '/2.mp3',
   },
 ];
 

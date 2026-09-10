@@ -66,6 +66,7 @@ class SoundEngine {
       this.currentSrc = src;
       const wasPlaying = !this.bgAudio.paused;
       this.bgAudio.src = src;
+      this.bgAudio.currentTime = 0;
       if (wasPlaying) {
         this.bgAudio.play().catch(() => {});
       }
