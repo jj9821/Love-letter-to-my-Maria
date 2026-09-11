@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { AnalyticsTracker } from '@/components/AnalyticsTracker';
 
 export const metadata: Metadata = {
   title: 'For Maria Mathew | A Letter',
@@ -32,6 +33,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-[#120e0b] text-[#211915] min-h-screen antialiased selection:bg-[#ebdcb9] selection:text-[#1a1715]">
+        <AnalyticsTracker />
         <div className="film-grain" aria-hidden="true" />
         {children}
       </body>
