@@ -12,6 +12,8 @@ interface LetterProps {
   isPaused: boolean;
   isSkipped: boolean;
   data?: LetterData;
+  otherLetters?: LetterData[];
+  onSelectLetter?: (id: string) => void;
   onComplete?: () => void;
   onDiscoverMemories?: () => void;
   onFoldLetter?: () => void;
@@ -25,6 +27,8 @@ export const Letter: React.FC<LetterProps> = ({
   isPaused,
   isSkipped,
   data,
+  otherLetters,
+  onSelectLetter,
   onComplete,
   onDiscoverMemories,
   onFoldLetter,
@@ -371,8 +375,24 @@ export const Letter: React.FC<LetterProps> = ({
           <span>Kept close to heart • Sent with all of me</span>
 
           <div className="flex items-center gap-4 flex-wrap justify-end">
-            {/* SWITCH TO ALTERNATE LETTER */}
-            {onSwitchLetter && alternateLetterTitle && (
+            {/* SWITCH TO OTHER LETTERS */}
+            {otherLetters && otherLetters.length > 0 && onSelectLetter ? (
+              <div className="flex items-center gap-3 flex-wrap">
+                {otherLetters.map((l) => (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => {
+                      soundEffects.playPaperRustle();
+                      onSelectLetter(l.id);
+                    }}
+                    className="font-handwriting text-lg sm:text-xl text-[#7d5d3b] hover:text-[#21160e] underline decoration-[#7d5d3b]/30 underline-offset-4 transition-colors cursor-pointer select-none"
+                  >
+                    Read {l.title} →
+                  </button>
+                ))}
+              </div>
+            ) : onSwitchLetter && alternateLetterTitle ? (
               <button
                 type="button"
                 onClick={() => {
@@ -383,7 +403,7 @@ export const Letter: React.FC<LetterProps> = ({
               >
                 Read {alternateLetterTitle} →
               </button>
-            )}
+            ) : null}
 
             {/* PHYSICAL INTERACTION: "Fold this letter." */}
             {isLetterCompleted && (

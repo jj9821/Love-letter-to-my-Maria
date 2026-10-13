@@ -134,7 +134,11 @@ export const HandwritingText: React.FC<HandwritingTextProps> = ({
           targetPara.includes('It was you.') ||
           targetPara.includes('It has always been you.') ||
           targetPara.includes('For you.') ||
-          targetPara.includes('For us.');
+          targetPara.includes('For us.') ||
+          targetPara.includes('before I ever hugged you') ||
+          targetPara.includes('because you were Maria') ||
+          targetPara.includes('became extraordinary') ||
+          targetPara.includes('It was you. It has been you');
 
         const delayToNext = isEmotionalSentence ? emotionalParaDelay : standardParaDelay;
 

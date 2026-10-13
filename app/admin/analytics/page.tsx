@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { letters } from '@/data/letter';
 
 interface MetricItem {
   name: string;
@@ -316,7 +317,7 @@ export default function AnalyticsDashboardPage() {
               Active Letters
             </span>
             <span className="text-2xl sm:text-3xl font-serif text-[#c59c6b] font-bold">
-              2
+              {letters.length}
             </span>
           </div>
         </section>

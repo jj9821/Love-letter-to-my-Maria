@@ -13,8 +13,8 @@ type LetterStage = 'closed' | 'opening' | 'extracted' | 'unfolded' | 'reading' |
 
 export default function Home() {
   const [stage, setStage] = useState<LetterStage>('closed');
-  // Default to the newly added letter (Letter II)
-  const [activeLetterId, setActiveLetterId] = useState<string>('letter-2');
+  // Default to the latest letter (Letter III)
+  const [activeLetterId, setActiveLetterId] = useState<string>('letter-3');
   
   // Fixed slow, intimate handwriting pace (multiplier 1.35)
   const slowSpeedMultiplier = 1.35;
@@ -22,8 +22,9 @@ export default function Home() {
   const [isSkipped, setIsSkipped] = useState<boolean>(false);
   const [isMusicOn, setIsMusicOn] = useState<boolean>(false);
 
-  const currentLetter = letters.find((l) => l.id === activeLetterId) || letters[1];
-  const alternateLetter = letters.find((l) => l.id !== activeLetterId);
+  const currentLetter = letters.find((l) => l.id === activeLetterId) || letters[2];
+  const otherLetters = letters.filter((l) => l.id !== activeLetterId);
+  const alternateLetter = otherLetters[0];
 
   // Subscribe to sound effects music status
   useEffect(() => {
@@ -76,24 +77,34 @@ export default function Home() {
     }, 1900);
   };
 
-  // Switch between letters seamlessly
-  const handleSwitchLetter = () => {
-    if (!alternateLetter) return;
+  // Switch to a specific letter seamlessly
+  const handleSelectLetter = (targetId: string) => {
+    if (targetId === activeLetterId) return;
+    const targetLetter = letters.find((l) => l.id === targetId);
+    if (!targetLetter) return;
+
     soundEffects.playPaperRustle();
     
-    // If currently reading, fold down then unfold the alternate letter
+    // If currently reading, fold down then unfold the selected letter
     if (stage === 'reading' || stage === 'unfolded') {
       setStage('extracted');
       setTimeout(() => {
-        setActiveLetterId(alternateLetter.id);
-        soundEffects.playBackgroundMusic(alternateLetter.audioSrc);
+        setActiveLetterId(targetId);
+        soundEffects.playBackgroundMusic(targetLetter.audioSrc);
         setStage('unfolded');
       }, 700);
       setTimeout(() => {
         setStage('reading');
       }, 1600);
     } else {
-      setActiveLetterId(alternateLetter.id);
+      setActiveLetterId(targetId);
+    }
+  };
+
+  // For compatibility with single switch handler
+  const handleSwitchLetter = () => {
+    if (alternateLetter) {
+      handleSelectLetter(alternateLetter.id);
     }
   };
 
@@ -199,6 +210,8 @@ export default function Home() {
               <Letter
                 stage={stage === 'memories' ? 'reading' : stage}
                 data={currentLetter}
+                otherLetters={otherLetters}
+                onSelectLetter={handleSelectLetter}
                 speedMultiplier={slowSpeedMultiplier}
                 isPaused={isPaused}
                 isSkipped={isSkipped}

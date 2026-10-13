@@ -231,7 +231,51 @@ export const letters: LetterData[] = [
     },
     audioSrc: '/2.mp3',
   },
+  {
+    id: 'letter-3',
+    title: 'Letter III',
+    subtitle: 'Before I ever held you',
+    dateTag: 'Under the quiet stars • The night my world began',
+    recipient: 'Maria Mathew',
+    sender: 'Joel',
+    salutation: 'To my Maria, ❤️',
+    paragraphs: [
+      "I fell in love with you before I ever hugged you.",
+      "I fell in love with you before I ever touched your skin, before I knew what it felt like to hold your hand, before I knew how perfectly you’d fit in my arms.",
+      "I fell in love with you the very first night we started talking. I don’t know how to explain it, Maria, but something about you felt different. Something about you felt familiar, like my heart had recognized someone it had been searching for long before I even knew you existed.",
+      "And maybe it sounds crazy to say that I knew you were my person that early, but I did. I felt it in the way our conversations flowed, in the way you made me smile without even trying, and in the way I found myself wanting to know every little thing about you.",
+      "I didn’t need to hold you to feel close to you. I didn’t need to kiss you to know I wanted you. All I needed was you being you, and somehow, that was enough for my heart to fall completely.",
+      "Meeting you was, and still is, the best thing that has ever happened to me.",
+      "And I don’t say that just because I love you. I say it because you changed something in me. You made ordinary days feel special. You gave me someone to look forward to, someone to tell the smallest things to, someone whose happiness started to matter just as much as my own.",
+      "I love the little things about you, Maria. The things you probably don’t even notice about yourself. The way you talk, the way you laugh, the way you make me feel like I can be completely myself around you. Even the simplest conversation with you can turn a bad day into a good one.",
+      "And the more I got to know you, the more I realized that falling in love with you wasn’t just one moment. It was happening over and over again. In every conversation, every laugh, every late-night thought, every moment I caught myself smiling at my phone because of you.",
+      "I know love isn’t always easy. There will be days when we misunderstand each other, days when things feel complicated, and moments when we don’t know the right words to say. But I want you to know something: I don’t want a love that’s only beautiful when everything is perfect. I want a love that stays even when things get difficult.",
+      "I want to learn you, understand you, grow with you, and keep choosing you. Not because I expect us to be perfect, but because you’re worth every effort it takes to make something beautiful last.",
+      "Sometimes I wish you could see yourself through my eyes, even if it were just for a minute. Maybe then you’d understand how much you mean to me. Maybe you’d understand why your name alone can make me smile, why your voice can make everything feel a little lighter, and why, out of all the people in this world, my heart found its way to you.",
+      "If I could go back to that very first night we talked, knowing everything I know now, I’d still choose to answer you. I’d still stay up talking to you. I’d still let myself fall for you, even knowing how vulnerable loving someone can make a person.",
+      "Because loving you is something I would never want to undo.",
+      "And if there’s one thing I hope you never doubt, it’s this: I didn’t fall in love with you because of what you could give me, or because of how you looked, or because of some perfect idea of who you might be.",
+      "I fell in love with you because you were Maria.",
+      "The girl who walked into my life without knowing she was about to become such a big part of it.",
+      "The girl who became my favorite thought, my favorite conversation, and someone I never want to stop discovering.",
+      "I fell in love with you before I ever held you in my arms, and now that I know what loving you feels like, I just want to spend my days finding new ways to show you.",
+      "And Maria, if life ever gives me the chance to relive one moment, I think I’d choose that first night we started talking.",
+      "Not because it was the most extraordinary night in the world.",
+      "But because it was the night my world started becoming extraordinary.",
+      "I loved you before the first hug, before the first touch, before any of the moments people usually associate with falling in love.",
+      "I loved you when all I had were your words and the feeling they left in my heart.",
+      "And somehow, even then, I knew.",
+      "It was you. It has been you. And I hope, with all my heart, that it will always be you.",
+    ],
+    closing: 'Forever yours, ❤️',
+    signature: 'Joel',
+    secretNote: {
+      note: 'Even before I knew what it felt like to hold your hand, my heart already knew where it belonged. It will always belong to you, Maria.',
+      closing: 'Forever yours, Joel',
+    },
+    audioSrc: '/audio.mp3',
+  },
 ];
 
-// Default letter is the new letter (Letter II)
-export const letterData: LetterData = letters[1];
+// Default letter is the latest letter (Letter III)
+export const letterData: LetterData = letters[2];
