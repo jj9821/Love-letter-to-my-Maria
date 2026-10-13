@@ -3,11 +3,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { soundEffects } from './AudioEffects';
+import { LetterPhoto } from '../data/letter';
 
 interface MemoriesProps {
   isVisible: boolean;
   onClose: () => void;
   onFoldLetter: () => void;
+  photos?: LetterPhoto[];
+  letterTitle?: string;
 }
 
 interface KeepsakeItem {
@@ -17,6 +20,7 @@ interface KeepsakeItem {
   date?: string;
   caption: string;
   rotation: number;
+  imageUrl?: string;
   imageVisual?: React.ReactNode;
 }
 
@@ -24,6 +28,8 @@ export const Memories: React.FC<MemoriesProps> = ({
   isVisible,
   onClose,
   onFoldLetter,
+  photos,
+  letterTitle,
 }) => {
   const [activeItem, setActiveItem] = useState<string | null>(null);
 
@@ -32,7 +38,7 @@ export const Memories: React.FC<MemoriesProps> = ({
     setActiveItem(activeItem === id ? null : id);
   };
 
-  const keepsakes: KeepsakeItem[] = [
+  const defaultKeepsakes: KeepsakeItem[] = [
     {
       id: 'photo-1',
       type: 'polaroid',
@@ -119,6 +125,31 @@ export const Memories: React.FC<MemoriesProps> = ({
     },
   ];
 
+  const keepsakes: KeepsakeItem[] = photos && photos.length > 0
+    ? [
+        ...photos.map((p) => ({
+          id: p.id,
+          type: 'polaroid' as const,
+          date: p.date,
+          caption: p.caption,
+          rotation: p.rotation ?? 0,
+          imageUrl: p.url,
+        })),
+        {
+          id: 'ticket-1',
+          type: 'ticket' as const,
+          caption: 'ADMIT TWO • NON-REFUNDABLE',
+          rotation: 3.5,
+        },
+        {
+          id: 'scrap-1',
+          type: 'scrap' as const,
+          caption: 'Because loving you is something I would never want to undo.',
+          rotation: -2.2,
+        },
+      ]
+    : defaultKeepsakes;
+
   if (!isVisible) return null;
 
   return (
@@ -139,7 +170,7 @@ export const Memories: React.FC<MemoriesProps> = ({
           <span className="w-8 sm:w-16 h-[1px] bg-[#91704c]" />
         </div>
         <p className="font-handwriting text-2xl sm:text-3xl text-[#ecdac1] italic">
-          Keepsakes carried across the distance
+          {letterTitle ? `Keepsakes tucked with ${letterTitle}` : 'Keepsakes carried across the distance'}
         </p>
       </div>
 
@@ -173,8 +204,17 @@ export const Memories: React.FC<MemoriesProps> = ({
                   }}
                 >
                   {/* Photo area */}
-                  <div className="w-full aspect-square rounded-[1px] overflow-hidden shadow-inner border border-black/20">
-                    {item.imageVisual}
+                  <div className="w-full aspect-square rounded-[1px] overflow-hidden shadow-inner border border-black/20 bg-[#241a14]">
+                    {item.imageUrl ? (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.caption}
+                        className="w-full h-full object-cover filter sepia-[0.08] contrast-[1.03] transition-transform duration-500 hover:scale-105"
+                        loading="lazy"
+                      />
+                    ) : (
+                      item.imageVisual
+                    )}
                   </div>
 
                   {/* Polaroid caption & date */}

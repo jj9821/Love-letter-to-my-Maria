@@ -231,6 +231,8 @@ export default function Home() {
               isVisible={stage === 'memories'}
               onClose={handleCloseMemories}
               onFoldLetter={handleFoldLetter}
+              photos={currentLetter.photos}
+              letterTitle={currentLetter.title}
             />
           )}
         </AnimatePresence>

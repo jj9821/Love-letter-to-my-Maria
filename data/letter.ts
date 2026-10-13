@@ -1,3 +1,11 @@
+export interface LetterPhoto {
+  id: string;
+  url: string;
+  caption: string;
+  date?: string;
+  rotation?: number;
+}
+
 export interface LetterData {
   id: string;
   title: string;
@@ -14,6 +22,7 @@ export interface LetterData {
     closing: string;
   };
   audioSrc?: string;
+  photos?: LetterPhoto[];
 }
 
 export const letters: LetterData[] = [
@@ -274,6 +283,43 @@ export const letters: LetterData[] = [
       closing: 'Forever yours, Joel',
     },
     audioSrc: '/3.mp3',
+    photos: [
+      {
+        id: 'l3-photo-1',
+        url: '/photos/letter-3/IMG_2694.jpg',
+        caption: 'The way you scrunch your nose when you look at me.',
+        date: 'My favorite sight',
+        rotation: -2.5,
+      },
+      {
+        id: 'l3-photo-2',
+        url: '/photos/letter-3/IMG_2692.jpg',
+        caption: 'Being completely goofy with the girl who made my world extraordinary.',
+        date: 'July 27, 2023',
+        rotation: 3.2,
+      },
+      {
+        id: 'l3-photo-3',
+        url: '/photos/letter-3/IMG_3867.jpg',
+        caption: 'Resting on my shoulder under the night sky.',
+        date: 'Quiet late hours',
+        rotation: -1.8,
+      },
+      {
+        id: 'l3-photo-4',
+        url: '/photos/letter-3/IMG_3451.jpg',
+        caption: 'Every smile that made me fall deeper and deeper.',
+        date: 'The girl who changed everything',
+        rotation: 2.7,
+      },
+      {
+        id: 'l3-photo-5',
+        url: '/photos/letter-3/IMG_3672.jpg',
+        caption: 'Before I ever held you, my heart already knew it was you.',
+        date: 'Forever yours',
+        rotation: -2.8,
+      },
+    ],
   },
 ];
 

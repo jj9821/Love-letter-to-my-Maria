@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HandwritingText } from './HandwritingText';
-import { LetterData, letterData as defaultLetterData } from '../data/letter';
+import { LetterData, LetterPhoto, letterData as defaultLetterData } from '../data/letter';
 import { soundEffects } from './AudioEffects';
 
 interface LetterProps {
@@ -45,6 +45,7 @@ export const Letter: React.FC<LetterProps> = ({
 
   // Scene 7: Photograph Corner Peek
   const [photoCornerRevealed, setPhotoCornerRevealed] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<LetterPhoto | null>(null);
 
   // Read Aloud intimate state
   const [isReadingAloud, setIsReadingAloud] = useState(false);
@@ -55,6 +56,7 @@ export const Letter: React.FC<LetterProps> = ({
     setIsSecretNoteRevealed(false);
     setFlowerHintActive(false);
     setPhotoCornerRevealed(false);
+    setSelectedPhoto(null);
   }, [activeData.id]);
 
   const handleLetterComplete = () => {
@@ -72,15 +74,20 @@ export const Letter: React.FC<LetterProps> = ({
     }
   }, [isLetterCompleted, isSecretNoteRevealed]);
 
-  // When secret note is opened, wait 2 seconds then reveal the photo corner peek
+  // Reveal photo corner peek when letter completes or secret note is opened
   useEffect(() => {
-    if (isSecretNoteRevealed && !photoCornerRevealed) {
+    if (isLetterCompleted && !photoCornerRevealed) {
       const timer = setTimeout(() => {
         setPhotoCornerRevealed(true);
-      }, 2000);
+      }, 2500);
+      return () => clearTimeout(timer);
+    } else if (isSecretNoteRevealed && !photoCornerRevealed) {
+      const timer = setTimeout(() => {
+        setPhotoCornerRevealed(true);
+      }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [isSecretNoteRevealed, photoCornerRevealed]);
+  }, [isLetterCompleted, isSecretNoteRevealed, photoCornerRevealed]);
 
   // Handle touching the pressed flower
   const handleTouchFlower = () => {
@@ -347,11 +354,13 @@ export const Letter: React.FC<LetterProps> = ({
               }}
               whileHover={{ scale: 1.08, y: -4 }}
               className="absolute -bottom-8 sm:-bottom-10 right-8 sm:right-14 z-30 cursor-pointer select-none group"
-              title="A photograph tucked behind the letter..."
+              title="Photographs tucked behind the letter..."
             >
               <div className="flex items-center gap-2">
                 <span className="text-xs sm:text-sm font-handwriting text-[#6e4e31] italic opacity-85 group-hover:opacity-100 underline decoration-[#6e4e31]/30 underline-offset-2">
-                  a photograph tucked behind...
+                  {activeData.photos && activeData.photos.length > 0
+                    ? 'photographs tucked behind...'
+                    : 'a photograph tucked behind...'}
                 </span>
 
                 {/* Peeking Polaroid Corner */}
@@ -359,8 +368,16 @@ export const Letter: React.FC<LetterProps> = ({
                   className="w-12 h-14 sm:w-14 sm:h-16 bg-[#faf6ee] p-1 shadow-[0_8px_18px_rgba(0,0,0,0.45)] border border-[#d8c3a1] rotate-12 relative overflow-hidden"
                 >
                   {/* Photo area */}
-                  <div className="w-full h-8 bg-gradient-to-tr from-[#633526] via-[#a35e39] to-[#db9c6b] flex items-center justify-center">
-                    <span className="text-[9px] text-[#fff2cc] opacity-80">📷</span>
+                  <div className="w-full h-8 bg-gradient-to-tr from-[#633526] via-[#a35e39] to-[#db9c6b] flex items-center justify-center overflow-hidden">
+                    {activeData.photos && activeData.photos.length > 0 ? (
+                      <img
+                        src={activeData.photos[0].url}
+                        alt="Tucked photograph"
+                        className="w-full h-full object-cover filter sepia-[0.12] brightness-[0.98]"
+                      />
+                    ) : (
+                      <span className="text-[9px] text-[#fff2cc] opacity-80">📷</span>
+                    )}
                   </div>
                   {/* Bottom caption border of polaroid */}
                   <div className="h-4 bg-[#faf6ee]" />
@@ -369,6 +386,93 @@ export const Letter: React.FC<LetterProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* TUCKED PHOTOGRAPHS GALLERY (When letter has attached photos, e.g. Letter III) */}
+        {activeData.photos && activeData.photos.length > 0 && isLetterCompleted && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.4 }}
+            className="mt-12 pt-8 border-t border-[#ddceb0]/50 relative z-20"
+          >
+            {/* Header */}
+            <div className="text-center mb-6">
+              <div className="flex items-center justify-center gap-2.5 opacity-70 mb-1.5">
+                <span className="w-6 sm:w-12 h-[1px] bg-[#91704c]" />
+                <span className="font-serif italic text-[11px] sm:text-xs text-[#7e5c38] tracking-widest uppercase">
+                  Tucked with this letter
+                </span>
+                <span className="w-6 sm:w-12 h-[1px] bg-[#91704c]" />
+              </div>
+              <p className="font-handwriting text-xl sm:text-2xl text-[#2a1c12] italic">
+                Moments before and after I held you
+              </p>
+            </div>
+
+            {/* Polaroid Grid */}
+            <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-7">
+              {activeData.photos.map((photo, idx) => (
+                <motion.div
+                  key={photo.id}
+                  onClick={() => {
+                    soundEffects.playPaperRustle();
+                    setSelectedPhoto(photo);
+                  }}
+                  whileHover={{ scale: 1.06, rotate: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="cursor-pointer select-none group"
+                  style={{
+                    transform: `rotate(${photo.rotation ?? (idx % 2 === 0 ? -2.5 : 2.5)}deg)`,
+                  }}
+                >
+                  <div className="w-52 sm:w-56 p-3 pb-4 bg-[#faf6ee] rounded-sm shadow-[0_12px_24px_rgba(0,0,0,0.22)] border border-[#dec9aa]/70 relative transition-shadow duration-300 group-hover:shadow-[0_20px_35px_rgba(0,0,0,0.35)]">
+                    {/* Washi tape on top */}
+                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-12 h-4 bg-[#eedbb8]/70 border-t border-b border-black/10 rotate-1 shadow-sm pointer-events-none" />
+
+                    {/* Photo */}
+                    <div className="w-full aspect-[4/5] rounded-[1px] overflow-hidden bg-[#241a14] border border-black/15 relative">
+                      <img
+                        src={photo.url}
+                        alt={photo.caption}
+                        className="w-full h-full object-cover filter sepia-[0.08] contrast-[1.03] transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-radial-gradient from-transparent to-black/20 pointer-events-none" />
+                    </div>
+
+                    {/* Caption */}
+                    <div className="pt-2.5 px-0.5 text-center">
+                      <p className="font-handwriting text-sm sm:text-base text-[#1f1610] leading-snug line-clamp-2">
+                        {photo.caption}
+                      </p>
+                      {photo.date && (
+                        <span className="block mt-1 text-[10px] font-serif italic text-[#7a5e3e] opacity-75">
+                          {photo.date}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Option to explore table memories */}
+            {onDiscoverMemories && (
+              <div className="mt-6 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundEffects.playPaperRustle();
+                    onDiscoverMemories();
+                  }}
+                  className="text-xs font-serif italic text-[#7e5c38] hover:text-[#2a1c12] underline decoration-[#7e5c38]/30 underline-offset-4 transition-colors cursor-pointer"
+                >
+                  Spread keepsakes across the desk →
+                </button>
+              </div>
+            )}
+          </motion.div>
+        )}
 
         {/* Bottom subtle stationery imprint & Physical Navigation / Fold Actions */}
         <div className="mt-14 sm:mt-18 pt-4 flex flex-col sm:flex-row justify-between items-center text-xs font-serif italic text-[#806345] opacity-75 border-t border-[#ddceb0]/35 gap-3">
@@ -420,6 +524,69 @@ export const Letter: React.FC<LetterProps> = ({
             )}
           </div>
         </div>
+
+        {/* LIGHTBOX MODAL FOR VIEWING AN ENLARGED PHOTOGRAPH */}
+        <AnimatePresence>
+          {selectedPhoto && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                soundEffects.playPaperRustle();
+                setSelectedPhoto(null);
+              }}
+              className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                transition={{ duration: 0.3 }}
+                onClick={(e) => e.stopPropagation()}
+                className="max-w-md sm:max-w-lg w-full p-4 sm:p-5 pb-6 bg-[#faf6ee] rounded-sm shadow-[0_30px_70px_rgba(0,0,0,0.85)] border border-[#d8c3a1] relative"
+              >
+                {/* Washi tape decoration */}
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-6 bg-[#eedbb8]/80 border-t border-b border-black/10 rotate-1 shadow-md pointer-events-none" />
+
+                {/* Full image */}
+                <div className="w-full max-h-[65vh] rounded-[1px] overflow-hidden bg-[#18110b] border border-black/20 flex items-center justify-center">
+                  <img
+                    src={selectedPhoto.url}
+                    alt={selectedPhoto.caption}
+                    className="w-full h-full max-h-[65vh] object-contain filter sepia-[0.05]"
+                  />
+                </div>
+
+                {/* Caption & details */}
+                <div className="mt-4 text-center px-2">
+                  <p className="font-handwriting text-xl sm:text-2xl text-[#1f1610] leading-snug">
+                    {selectedPhoto.caption}
+                  </p>
+                  {selectedPhoto.date && (
+                    <span className="block mt-1.5 text-xs font-serif italic text-[#7a5e3e] opacity-80">
+                      {selectedPhoto.date}
+                    </span>
+                  )}
+                </div>
+
+                {/* Close Button */}
+                <div className="mt-4 pt-3 border-t border-[#8a6845]/20 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundEffects.playPaperRustle();
+                      setSelectedPhoto(null);
+                    }}
+                    className="text-xs font-serif italic text-[#7e5c38] hover:text-[#1f1610] underline decoration-[#7e5c38]/40 underline-offset-4 cursor-pointer"
+                  >
+                    Tuck photograph back
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );
